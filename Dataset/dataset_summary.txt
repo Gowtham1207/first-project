@@ -1,0 +1,31 @@
+Weapon Detection Dataset Organization Summary
+==================================================
+
+Total weapon types: 9
+Weapon types: Automatic Rifle, Bazooka, Grenade Launcher, Handgun, Knife, SMG, Shotgun, Sniper, Sword
+
+Training images: 571
+Validation images: 143
+Total images: 714
+
+Training set distribution:
+  Automatic Rifle: 59 images
+  Bazooka: 54 images
+  Grenade Launcher: 70 images
+  Handgun: 56 images
+  Knife: 58 images
+  SMG: 70 images
+  Shotgun: 62 images
+  Sniper: 71 images
+  Sword: 71 images
+
+Validation set distribution:
+  Automatic Rifle: 15 images
+  Bazooka: 13 images
+  Grenade Launcher: 18 images
+  Handgun: 14 images
+  Knife: 14 images
+  SMG: 17 images
+  Shotgun: 16 images
+  Sniper: 18 images
+  Sword: 18 images

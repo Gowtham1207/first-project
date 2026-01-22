@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weapon Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 50px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 2.8em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.15em;
+            font-weight: 400;
+        }
+
+        .upload-area {
+            border: 3px dashed #95a5a6;
+            border-radius: 16px;
+            padding: 50px 40px;
+            margin: 35px 0;
+            background: #f8f9fa;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .upload-area:hover::before {
+            left: 100%;
+        }
+
+        .upload-area:hover {
+            border-color: #5d6d7e;
+            background: #ecf0f1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #34495e;
+            background: #e5e8e9;
+            transform: scale(1.02);
+            box-shadow: 0 12px 35px rgba(52, 73, 94, 0.2);
+        }
+
+        .upload-icon {
+            font-size: 4.5em;
+            color: #5d6d7e;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .upload-text {
+            color: #5d6d7e;
+            font-size: 1.15em;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            border: none;
+            padding: 16px 45px;
+            border-radius: 50px;
+            font-size: 1.15em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 25px;
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(44, 62, 80, 0.4);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 10px rgba(44, 62, 80, 0.2);
+        }
+
+        .preview-area {
+            margin: 35px 0;
+            display: none;
+        }
+
+        .preview-area.active {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 450px;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+            margin-bottom: 25px;
+            border: 3px solid #ecf0f1;
+        }
+
+        .result-area {
+            margin-top: 35px;
+            padding: 35px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ecf0f1 100%);
+            border-radius: 16px;
+            display: none;
+            border: 1px solid #dee2e6;
+        }
+
+        .result-area.active {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            font-size: 1.7em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 24px;
+            margin: 18px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            text-align: left;
+            border-left: 4px solid #5d6d7e;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #5d6d7e;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9em;
+        }
+
+        .result-value {
+            color: #2c3e50;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .result-value.yes {
+            color: #27ae60;
+        }
+
+        .result-value.no {
+            color: #e74c3c;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 35px;
+            background: #e0e0e0;
+            border-radius: 18px;
+            overflow: hidden;
+            margin-top: 12px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5d6d7e, #34495e);
+            border-radius: 18px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading {
+            display: none;
+            margin: 25px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading p {
+            margin-top: 18px;
+            color: #7f8c8d;
+            font-weight: 500;
+            font-size: 1.05em;
+        }
+
+        .spinner {
+            border: 4px solid #ecf0f1;
+            border-top: 4px solid #34495e;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+            color: #c33;
+            padding: 18px 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            display: none;
+            border-left: 4px solid #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
+            font-weight: 500;
+        }
+
+        .error.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 35px 25px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            .upload-area {
+                padding: 35px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔫 Weapon Detection</h1>
+        <p class="subtitle">Upload an image to detect and classify weapons</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Click to upload or drag and drop</div>
+            <div style="color: #95a5a6; font-size: 0.9em; font-weight: 400;">PNG, JPG, JPEG, GIF, BMP (Max 16MB)</div>
+            <input type="file" id="fileInput" class="file-input" accept="image/*">
+        </div>
+
+        <button class="btn" id="predictBtn" onclick="predictImage()" disabled>Detect Weapon</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #666;">Analyzing image...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="preview-area" id="previewArea">
+            <img id="previewImage" class="preview-image" alt="Preview">
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-title">Detection Results</div>
+            
+            <div class="result-item">
+                <div class="result-label">Weapon Detected</div>
+                <div class="result-value" id="weaponDetected"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Weapon Type</div>
+                <div class="result-value" id="weaponType"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Confidence</div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const predictBtn = document.getElementById('predictBtn');
+        const previewArea = document.getElementById('previewArea');
+        const previewImage = document.getElementById('previewImage');
+        const resultArea = document.getElementById('resultArea');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // File input change
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect({ target: { files: files } });
+            }
+        });
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewArea.classList.add('active');
+                    resultArea.classList.remove('active');
+                    error.classList.remove('active');
+                    predictBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function predictImage() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Show loading, hide results
+            loading.classList.add('active');
+            resultArea.classList.remove('active');
+            error.classList.remove('active');
+            predictBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    error.textContent = result.error;
+                    error.classList.add('active');
+                } else {
+                    // Display results
+                    document.getElementById('weaponDetected').textContent = result.weapon_detected.toUpperCase();
+                    document.getElementById('weaponDetected').className = 'result-value ' + result.weapon_detected;
+                    
+                    document.getElementById('weaponType').textContent = result.weapon_type || 'Unknown';
+                    
+                    const confidence = result.confidence || 0;
+                    const confidenceFill = document.getElementById('confidenceFill');
+                    confidenceFill.style.width = confidence + '%';
+                    confidenceFill.textContent = confidence + '%';
+                    
+                    resultArea.classList.add('active');
+                }
+            } catch (err) {
+                error.textContent = 'Error: ' + err.message;
+                error.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+                predictBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
